@@ -1,0 +1,65 @@
+﻿@page "/ordercust"
+@using MauiApp1.DbApp.Models
+@using MauiApp1.Front.Services.Jwt
+@layout CustomerLayout
+@inject IOrderRepository OrderRepository
+@inject IJwtTokenService JwtTokenService
+
+<div class="container mt-4">
+    <h2 class="mb-4">My Orders</h2>
+
+
+
+    @if (isLoading)
+    {
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    }
+    else if (orders == null || orders.Count == 0)
+    {
+        <div class="alert alert-info">
+            You have no orders yet.
+        </div>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Order Date</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in orders)
+                {
+                    <tr>
+                        <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@order.Product.Name</td>
+                        <td>@order.Quantity</td>
+                        <td>@order.TotalPrice.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    private List<OrderEntity> orders = new List<OrderEntity>();
+    private bool isLoading = true;
+    private Guid currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var user = Guid.Parse(JwtTokenService.ReadToken());
+
+
+        orders = await OrderRepository.GetOrdersByCustomerIdAsync(Guid.Parse(JwtTokenService.ReadToken())) as List<OrderEntity> ?? new List<OrderEntity>();
+        isLoading = false;
+    }
+}

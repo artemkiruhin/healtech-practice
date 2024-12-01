@@ -1,0 +1,89 @@
+﻿@page "/register"
+
+@using MauiApp1.DbApp.Models
+@using MauiApp1.Front.Services
+@using MauiApp1.Front.Services.Log
+@layout SignLayout
+@inject IUserRepository Repository
+@inject IHashService Hasher
+@inject ILoggingService Logger
+
+@inject NavigationManager NavigationManager
+<div class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8">
+        <h3 class="text-center text-2xl font-bold text-gray-800 mb-6">Регистрация</h3>
+        <EditForm Model="@registerModel" OnValidSubmit="HandleLogin" class="space-y-4">
+            <DataAnnotationsValidator />
+            <div class="relative">
+
+                <InputText @bind-Value="registerModel.Name" type="text" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Name" />
+                <ValidationMessage For="@(() => registerModel.Name)" class="text-red-500 text-sm mt-1" />
+            </div>
+            <div class="relative">
+
+                <InputText @bind-Value="registerModel.Username" type="text" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Username" />
+                <ValidationMessage For="@(() => registerModel.Username)" class="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div class="relative">
+
+                <InputText @bind-Value="registerModel.Password" type="password" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Пароль" />
+                <ValidationMessage For="@(() => registerModel.Password)" class="text-red-500 text-sm mt-1" />
+            </div>
+            <div class="relative">
+
+                <InputCheckbox @bind-Value="registerModel.IsEmployee" type="password" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Сотрудник" />
+                <ValidationMessage For="@(() => registerModel.IsEmployee)" class="text-red-500 text-sm mt-1" />
+            </div>
+
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                Зарегистрироваться
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private RegisterModel registerModel = new();
+
+    private class RegisterModel
+    {
+        [Required(ErrorMessage = "Name обязателен")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Username обязателен")]
+        public string Username { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Пароль обязателен")]
+        [MinLength(6, ErrorMessage = "Пароль должен быть не короче 6 символов")]
+        public string Password { get; set; } = string.Empty;
+
+        public bool IsEmployee { get; set; } = false;
+    }
+
+    private async Task HandleLogin()
+    {
+        var user = await Repository.GetByUsernameAsync(registerModel.Username);
+
+        if (user != null)
+        {
+
+        }
+        else
+        {
+            if (registerModel.IsEmployee)
+            {
+                await Repository.AddAsync(UserEntity.Create(registerModel.Name, registerModel.Username, Hasher.HashPassword(registerModel.Password), "Employee"));
+                Logger.LogInfo($"Пользователь {registerModel.Username} успешно зарегитрировался как сотрудник");
+                NavigationManager.NavigateTo("login");
+            }
+            else
+            {
+                await Repository.AddAsync(UserEntity.Create(registerModel.Name, registerModel.Username, Hasher.HashPassword(registerModel.Password), "Customer"));
+                Logger.LogInfo($"Пользователь {registerModel.Username} успешно зарегитрировался как клиент");
+                NavigationManager.NavigateTo("login");
+            }
+        }
+
+    }
+}

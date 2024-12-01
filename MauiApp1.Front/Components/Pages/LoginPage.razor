@@ -1,0 +1,108 @@
+﻿@page "/login"
+@using MauiApp1.DbApp.Models
+@using MauiApp1.Front.Services
+@using MauiApp1.Front.Services.Jwt
+@using MauiApp1.Front.Services.Log
+@layout SignLayout
+@inject IUserRepository Repository
+@inject IHashService Hasher
+@inject IJwtTokenService JwtTokenService
+@inject ILoggingService Logger
+
+@inject NavigationManager NavigationManager
+<div class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8">
+        <h3 class="text-center text-2xl font-bold text-gray-800 mb-6">Вход</h3>
+        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" class="space-y-4">
+            <DataAnnotationsValidator />
+
+            <div class="relative">
+
+                <InputText @bind-Value="loginModel.Username" type="text" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Username" />
+                <ValidationMessage For="@(() => loginModel.Username)" class="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div class="relative">
+
+                <InputText @bind-Value="loginModel.Password" type="password" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Пароль" />
+                <ValidationMessage For="@(() => loginModel.Password)" class="text-red-500 text-sm mt-1" />
+            </div>
+
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                Войти
+            </button>
+        </EditForm>
+
+        <button @onclick="HandleToRegister" type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+            Зарегистрироваться
+        </button>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private Guid? userId;
+
+    private class LoginModel
+    {
+        [Required(ErrorMessage = "Username обязателен")]
+        public string Username { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Пароль обязателен")]
+        [MinLength(6, ErrorMessage = "Пароль должен быть не короче 6 символов")]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    private async Task HandleLogin()
+    {
+
+        var user = await Repository.GetByUsernameAsync(loginModel.Username);
+
+        if (user == null)
+        {
+
+        }
+
+        if (user.PasswordHash == Hasher.HashPassword(loginModel.Password))
+        {
+
+            
+
+            var token = user.Id.ToString();
+            JwtTokenService.SaveToken(token);
+
+            if (user.Role == "Customer")
+            {
+                Logger.LogInfo($"Клиент {user.Username} совершил вход");
+                NavigationManager.NavigateTo("homecust");
+            }
+            else
+            {
+                Logger.LogInfo($"Сотрудник {user.Username} совершил вход");
+                NavigationManager.NavigateTo("homeempl");
+            }
+        }
+    }
+
+    private void HandleToRegister()
+    {
+        NavigationManager.NavigateTo("register");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var user = await Repository.GetByIdAsync(Guid.Parse(JwtTokenService.ReadToken())) ?? null;
+            if (user != null)
+            {
+                if (user.Role == "Customer") NavigationManager.NavigateTo("homecust");
+                else NavigationManager.NavigateTo("homeempl");
+            }
+        }
+        catch
+        {
+            
+        }
+    }
+}
