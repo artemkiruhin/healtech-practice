@@ -13,12 +13,17 @@ namespace MauiApp1.Front.Services.Mapper
 
             // Order Mapping
             CreateMap<OrderEntity, OrderDto>()
-                .ForMember(dest => dest.TotalPrice,
-                    opt => opt.MapFrom(src => src.Quantity * src.Product.Price));
+    .ForMember(dest => dest.CustomerUsername,
+        opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Username : "Unknown")) // Для отладки
+    .ForMember(dest => dest.ProductName,
+        opt => opt.MapFrom(src => src.Product.Name))
+    .ForMember(dest => dest.TotalPrice,
+        opt => opt.MapFrom(src => src.TotalPrice));
 
             CreateMap<OrderDto, OrderEntity>()
-                .ForMember(dest => dest.Product, opt => opt.Ignore())
-                .ForMember(dest => dest.Customer, opt => opt.Ignore());
+                .ForMember(dest => dest.Product, opt => opt.Ignore()) // Игнорируем навигационные свойства
+                .ForMember(dest => dest.Customer, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()); // TotalPrice задаётся в сущности автоматически
 
             // User Mapping
             CreateMap<UserEntity, UserDto>().ReverseMap();

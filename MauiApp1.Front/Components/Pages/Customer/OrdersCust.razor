@@ -6,60 +6,66 @@
 @inject IJwtTokenService JwtTokenService
 
 <div class="container mt-4">
-    <h2 class="mb-4">My Orders</h2>
-
-
-
+    <h2 class="mb-4">Мои Заказы</h2>
     @if (isLoading)
     {
-        <div class="spinner-border" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+            </div>
     }
     else if (orders == null || orders.Count == 0)
     {
-        <div class="alert alert-info">
-            You have no orders yet.
-        </div>
+            <div class="alert alert-info">
+                У вас пока нет заказов.
+            </div>
     }
     else
     {
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Order Date</th>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    <th>Total Price</th>
-                </tr>
-            </thead>
-            <tbody>
+            <table class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Дата заказа</th>
+                        <th>Товар</th>
+                        <th>Количество</th>
+                        <th>Итоговая стоимость</th>
+                    </tr>
+                </thead>
+                <tbody>
                 @foreach (var order in orders)
                 {
-                    <tr>
-                        <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td>
-                        <td>@order.Product.Name</td>
-                        <td>@order.Quantity</td>
-                        <td>@order.TotalPrice.ToString("C")</td>
-                    </tr>
+                            <tr>
+                                <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@order.Product.Name</td>
+                                <td>@order.Quantity</td>
+                                <td>@order.TotalPrice.ToString("C")</td>
+                            </tr>
                 }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
     }
 </div>
 
 @code {
     private List<OrderEntity> orders = new List<OrderEntity>();
     private bool isLoading = true;
-    private Guid currentUserId;
 
     protected override async Task OnInitializedAsync()
     {
-
-        var user = Guid.Parse(JwtTokenService.ReadToken());
-
-
-        orders = await OrderRepository.GetOrdersByCustomerIdAsync(Guid.Parse(JwtTokenService.ReadToken())) as List<OrderEntity> ?? new List<OrderEntity>();
-        isLoading = false;
+        try
+        {
+            var userId = Guid.Parse(JwtTokenService.ReadToken());
+            orders = await OrderRepository.GetOrdersByCustomerIdAsync(userId) as List<OrderEntity> ?? new List<OrderEntity>();
+        }
+        catch (Exception ex)
+        {
+            // TODO: Implement proper error handling
+            Console.WriteLine($"Ошибка загрузки заказов: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }

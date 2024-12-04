@@ -10,56 +10,50 @@
 @inject IOrderRepository OrderRepository
 @inject IJwtTokenService JwtTokenService
 
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 class="text-2xl font-bold text-gray-800">Our Products</h3>
-            <div class="flex items-center space-x-4">
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mb-0">Наши Продукты</h3>
+            <div class="input-group w-50">
                 <input type="text"
-                @bind="SearchTerm"
-                @bind:event="oninput"
-                placeholder="Search products..."
-                class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                       @bind="SearchTerm"
+                       @bind:event="oninput"
+                       placeholder="Поиск товаров..."
+                       class="form-control" />
             </div>
         </div>
 
         @if (isLoading)
         {
-            <div class="flex justify-center items-center py-8">
-                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-blue-500"></div>
+            <div class="text-center my-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
             </div>
         }
         else if (filteredProducts.Any())
         {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 p-3">
                 @foreach (var product in filteredProducts)
                 {
-                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
-                        <div class="p-5">
-                            <h5 class="mb-2 text-xl font-semibold tracking-tight text-gray-900">
-                                @product.Name
-                            </h5>
-                            <div class="flex justify-between items-center mt-4">
-                                <span class="text-2xl font-bold text-blue-600">
-                                    @product.Price.ToString("C")
-                                </span>
-                                <span class="text-sm text-gray-500">
-                                    Stock: @product.StockQuantity
-                                </span>
-                            </div>
-                            <div class="flex space-x-2 mt-4">
-                                <button @onclick="() => AddToCart(product)"
-                                class="flex-1 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-300
-                                               disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled="@(product.StockQuantity <= 0)">
-                                    @(product.StockQuantity > 0 ? "Add to Cart" : "Out of Stock")
-                                </button>
-                                <button @onclick="() => CreateOrder(product)"
-                                class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-300
-                                               disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled="@(product.StockQuantity <= 0)">
-                                    @(product.StockQuantity > 0 ? "Order Now" : "Out of Stock")
-                                </button>
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">@product.Name</h5>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="h4 text-primary mb-0">
+                                        @product.Price.ToString("C")
+                                    </span>
+                                    <small class="text-muted">Склад: @product.StockQuantity</small>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button @onclick="() => CreateOrder(product)"
+                                            class="btn btn-primary flex-grow-1"
+                                            disabled="@(product.StockQuantity <= 0)">
+                                        @(product.StockQuantity > 0 ? "Заказать" : "Нет в наличии")
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -68,34 +62,39 @@
         }
         else
         {
-            <div class="text-center py-8 text-gray-500">
-                No products found.
+            <div class="alert alert-info text-center" role="alert">
+                Товары не найдены.
             </div>
         }
     </div>
 
     @if (showOrderModal)
     {
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg p-6 w-96">
-                <h4 class="text-xl font-semibold mb-4">Create Order</h4>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">Quantity</label>
-                    <input type="number"
-                    @bind="orderQuantity"
-                    min="1"
-                    max="@selectedProduct.StockQuantity"
-                    class="w-full px-3 py-2 border rounded-md" />
-                </div>
-                <div class="flex justify-between">
-                    <button @onclick="ConfirmOrder"
-                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                        Confirm Order
-                    </button>
-                    <button @onclick="CancelOrder"
-                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                        Cancel
-                    </button>
+        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Создание заказа</h5>
+                        <button type="button" class="btn-close" @onclick="CancelOrder"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Количество</label>
+                            <input type="number"
+                                   @bind="orderQuantity"
+                                   min="1"
+                                   max="@selectedProduct.StockQuantity"
+                                   class="form-control" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CancelOrder">
+                            Отмена
+                        </button>
+                        <button type="button" class="btn btn-primary" @onclick="ConfirmOrder">
+                            Подтвердить заказ
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -180,8 +179,8 @@
                     Quantity = orderQuantity,
                     OrderDate = DateTime.UtcNow
                 };
-                var order = OrderEntity.Create(userId, selectedProduct.Id, orderQuantity);
-
+                var order = OrderEntity.Create(userId, selectedProduct.Id, orderQuantity, selectedProduct.Price);
+                order.Id = Guid.NewGuid();
             await OrderRepository.AddAsync(order);
 
             // Update local product stock

@@ -8,44 +8,57 @@
 @inject IHashService Hasher
 @inject IJwtTokenService JwtTokenService
 @inject ILoggingService Logger
-
 @inject NavigationManager NavigationManager
-<div class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8">
-        <h3 class="text-center text-2xl font-bold text-gray-800 mb-6">Вход</h3>
-        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" class="space-y-4">
-            <DataAnnotationsValidator />
 
-            <div class="relative">
-
-                <InputText @bind-Value="loginModel.Username" type="text" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Username" />
-                <ValidationMessage For="@(() => loginModel.Username)" class="text-red-500 text-sm mt-1" />
+<div class="container-fluid vh-100 bg-primary d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <h2 class="card-title text-primary mb-3">Вход в систему</h2>
+                    <p class="text-muted">Пожалуйста, введите ваши данные</p>
+                </div>
+                <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label class="form-label">Имя пользователя</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <InputText @bind-Value="loginModel.Username" class="form-control" placeholder="Введите имя пользователя" />
+                        </div>
+                        <ValidationMessage For="@(() => loginModel.Username)" class="text-danger small mt-1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Пароль</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <InputText type="password" @bind-Value="loginModel.Password" class="form-control" placeholder="Введите пароль" />
+                        </div>
+                        <ValidationMessage For="@(() => loginModel.Password)" class="text-danger small mt-1" />
+                    </div>
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            Войти
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-muted">Нет аккаунта? </span>
+                        <button @onclick="HandleToRegister" class="btn btn-link p-0">
+                            Зарегистрироваться
+                        </button>
+                    </div>
+                </EditForm>
             </div>
-
-            <div class="relative">
-
-                <InputText @bind-Value="loginModel.Password" type="password" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Пароль" />
-                <ValidationMessage For="@(() => loginModel.Password)" class="text-red-500 text-sm mt-1" />
-            </div>
-
-            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                Войти
-            </button>
-        </EditForm>
-
-        <button @onclick="HandleToRegister" type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-            Зарегистрироваться
-        </button>
+        </div>
     </div>
 </div>
 
 @code {
     private LoginModel loginModel = new();
-    private Guid? userId;
 
     private class LoginModel
     {
-        [Required(ErrorMessage = "Username обязателен")]
+        [Required(ErrorMessage = "Имя пользователя обязательно")]
         public string Username { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Пароль обязателен")]
@@ -55,19 +68,16 @@
 
     private async Task HandleLogin()
     {
-
         var user = await Repository.GetByUsernameAsync(loginModel.Username);
 
         if (user == null)
         {
-
+            // Обработка случая, когда пользователь не найден
+            return;
         }
 
-        if (user.PasswordHash == Hasher.HashPassword(loginModel.Password))
+        if (Hasher.HashPassword(loginModel.Password) == user.PasswordHash)
         {
-
-            
-
             var token = user.Id.ToString();
             JwtTokenService.SaveToken(token);
 
@@ -81,6 +91,10 @@
                 Logger.LogInfo($"Сотрудник {user.Username} совершил вход");
                 NavigationManager.NavigateTo("homeempl");
             }
+        }
+        else
+        {
+            // Обработка неверного пароля
         }
     }
 
@@ -102,7 +116,7 @@
         }
         catch
         {
-            
+            // Обработка ошибок при чтении токена
         }
     }
 }

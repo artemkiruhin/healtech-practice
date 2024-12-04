@@ -1,0 +1,58 @@
+﻿@page "/helpcust"
+@layout CustomerLayout
+@using System.Reflection
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<div class="pdf-container">
+    <h2>Справка по приложению</h2>
+    
+    <div class="pdf-actions">
+        <button @onclick="OpenPdf" class="btn btn-primary">
+            Открыть справку
+        </button>
+        <button @onclick="DownloadPdf" class="btn btn-secondary">
+            Скачать справку
+        </button>
+    </div>
+
+    @if (showPdf)
+    {
+        <iframe src="data:application/pdf;base64,@pdfBase64" 
+                width="100%" 
+                height="600px" 
+                type="application/pdf">
+        </iframe>
+    }
+</div>
+
+@code {
+    private string pdfBase64;
+    private bool showPdf = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Загрузка PDF-файла из встроенных ресурсов
+        var assembly = typeof(App).GetTypeInfo().Assembly;
+        using (var stream = assembly.GetManifestResourceStream("MauiApp1.Front.Resources.Help.Help.pdf"))
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                await stream.CopyToAsync(memoryStream);
+                pdfBase64 = Convert.ToBase64String(memoryStream.ToArray());
+            }
+        }
+    }
+
+    private void OpenPdf()
+    {
+        showPdf = !showPdf;
+    }
+
+    private async Task DownloadPdf()
+    {
+        // Скачивание PDF-файла
+        await JS.InvokeVoidAsync("downloadFile", "help_guide.pdf", 
+            Convert.FromBase64String(pdfBase64));
+    }
+}

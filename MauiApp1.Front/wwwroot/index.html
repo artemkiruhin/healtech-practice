@@ -24,6 +24,15 @@
     </div>
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <script>
+        window.downloadFile = (fileName, bytes) => {
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+            link.click();
+            URL.revokeObjectURL(link.href);
+        };
+    </script>
 
 </body>
 

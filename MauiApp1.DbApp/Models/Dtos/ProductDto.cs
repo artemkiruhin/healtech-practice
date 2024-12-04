@@ -19,7 +19,9 @@
         public Guid Id { get; set; }
         public DateTime OrderDate { get; set; } // Order creation date
         public Guid CustomerId { get; set; } // Customer ID
+        public string CustomerUsername { get; set; }
         public Guid ProductId { get; set; } // Product ID
+        public string ProductName { get; set; }
         public int Quantity { get; set; } // Product quantity
         public decimal TotalPrice { get; set; } // Total order price
     }

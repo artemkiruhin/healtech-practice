@@ -5,51 +5,73 @@
 @using MauiApp1.DbApp.Models.Dtos
 @using MauiApp1.Front.Services.Jwt
 @inject IOrderRepository OrderRepository
+@inject IUserRepository UserRepository
+@inject IProductRepository ProductRepository
 @inject IMapper Mapper
 
-<div class="container mt-4">
-    <h2 class="mb-4">All Orders</h2>
-
-    @if (isLoading)
-    {
-        <div class="spinner-border" role="status">
-            <span class="sr-only">Loading...</span>
+<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>All Orders
+                    </h2>
+                    <span class="badge bg-light text-primary">Total Orders: @orders.Count</span>
+                </div>
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (orders == null || orders.Count == 0)
+                    {
+                        <div class="alert alert-info text-center" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>No orders found.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Order Date</th>
+                                        <th>Customer</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Total Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in orders)
+                                    {
+                                        <tr>
+                                            <td>@order.Id.ToString().Substring(0, 8)</td>
+                                            <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td>
+                                                <span class="badge bg-secondary">@order.CustomerUsername</span>
+                                            </td>
+                                            <td>@order.ProductName</td>
+                                            <td>
+                                                <span class="badge bg-info">@order.Quantity</span>
+                                            </td>
+                                            <td class="fw-bold text-success">@order.TotalPrice.ToString("C")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
-    }
-    else if (orders == null || orders.Count == 0)
-    {
-        <div class="alert alert-info">
-            No orders found.
-        </div>
-    }
-    else
-    {
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Order Date</th>
-                    <th>Customer</th>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    <th>Total Price</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var order in orders)
-                {
-                    <tr>
-                        <td>@order.Id</td>
-                        <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td>
-                        <td>@order.CustomerId</td>
-                        <td>@order.ProductId</td>
-                        <td>@order.Quantity</td>
-                        <td>@order.TotalPrice.ToString("C")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+    </div>
 </div>
 
 @code {
@@ -60,13 +82,39 @@
     {
         try
         {
+            // Загружаем данные
             var ord = await OrderRepository.GetAllAsync();
-            orders = ord.Select(x => Mapper.Map<OrderDto>(x)).ToList();
+            var users = await UserRepository.GetAllAsync();
+            var products = await ProductRepository.GetAllAsync();
+
+            // Преобразуем заказы
+            orders = (await Task.WhenAll(ord.Select(async x => new OrderDto
+                {
+                    Id = x.Id,                                  // ID заказа
+                    OrderDate = x.OrderDate,                    // Дата создания заказа
+                    CustomerId = x.CustomerId,                  // ID клиента
+                    CustomerUsername = users.FirstOrDefault(y => y.Id == x.CustomerId)?.Username ?? "Unknown", // Имя пользователя клиента
+                    ProductId = x.ProductId,                    // ID товара
+                    ProductName = products.FirstOrDefault(y => y.Id == x.ProductId)?.Name ?? "Unknown",        // Название товара
+                    Quantity = x.Quantity,                      // Количество товара
+                    TotalPrice = x.Quantity * (products.FirstOrDefault(y => y.Id == x.ProductId)?.Price ?? 0)  // Общая цена заказа
+                }))).ToList();
+
+
+            // Заполняем `CustomerUsername` параллельно
+            // var tasks = orders.Select(async order =>
+            // {
+            //     var customers = await UserRepository.GetAllAsync();
+            //     var customer = customers.FirstOrDefault(y => y.Id == order.CustomerId);
+            //     order.CustomerUsername = customer?.Username ?? "Unknown";
+            // });
+
+            // await Task.WhenAll(tasks);
+
             isLoading = false;
         }
         catch (Exception ex)
         {
-            // Consider adding error logging or displaying an error message
             Console.WriteLine($"Error loading orders: {ex.Message}");
             isLoading = false;
         }

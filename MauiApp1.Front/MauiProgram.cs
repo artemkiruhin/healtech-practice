@@ -6,6 +6,7 @@ using MauiApp1.Front.Services.Entity;
 using MauiApp1.Front.Services.Jwt;
 using MauiApp1.Front.Services.Log;
 using MauiApp1.Front.Services.Mapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace MauiApp1.Front
@@ -25,7 +26,9 @@ namespace MauiApp1.Front
             builder.Services.AddMauiBlazorWebView();
 
 
-            builder.Services.AddSingleton<HealtechDbContext>();
+            builder.Services.AddDbContext<HealtechDbContext>(options =>
+    options.UseNpgsql("Server=localhost;Database=healtech;Username=postgres;Password=root"));
+
             builder.Services.AddSingleton<IUserRepository, UserRepository>();
             builder.Services.AddSingleton<IOrderRepository, OrderRepository>();
             builder.Services.AddSingleton<IProductRepository, ProductRepository>();

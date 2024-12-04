@@ -12,10 +12,8 @@ namespace MauiApp1.DbApp
         public DbSet<ProductEntity> Products { get; set; } = null!;
         public DbSet<OrderEntity> Orders { get; set; } = null!;
 
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public HealtechDbContext(DbContextOptions<HealtechDbContext> options) : base(options)
         {
-            optionsBuilder.UseNpgsql("Server=localhost;Database=healtech;Username=postgres;Password=root");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -94,6 +92,8 @@ namespace MauiApp1.DbApp
 
             entity.Property(o => o.Quantity)
                 .IsRequired();
+
+            entity.Ignore(o => o.TotalPrice);
 
             // Навигационные свойства Customer и Product
             entity.HasOne(o => o.Customer)

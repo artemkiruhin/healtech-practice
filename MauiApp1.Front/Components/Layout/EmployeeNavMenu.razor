@@ -2,44 +2,37 @@
 @inject IJwtTokenService JwtTokenService
 @inject NavigationManager NavigationManager
 
-
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">MauiApp1.Front</a>
+<div class="d-flex">
+    <div class="bg-dark text-white sidebar">
+        <div class="brand-logo p-3 text-center">
+            <h4 class="mb-0">Healtech</h4>
+        </div>
+        <nav class="nav flex-column mt-3">
+            <NavLink class="nav-link text-white py-2 px-3" href="homeempl" Match="NavLinkMatch.All">
+                <i class="bi bi-house me-2"></i>Главная
+            </NavLink>
+            <NavLink class="nav-link text-white py-2 px-3" href="prodempl">
+                <i class="bi bi-box me-2"></i>Товары
+            </NavLink>
+            <NavLink class="nav-link text-white py-2 px-3" href="orderempl">
+                <i class="bi bi-cart me-2"></i>Заказы
+            </NavLink>
+            <NavLink class="nav-link text-white py-2 px-3" href="custempl">
+                <i class="bi bi-people me-2"></i>Клиенты
+            </NavLink>
+            <NavLink class="nav-link text-white py-2 px-3" href="emplempl">
+                <i class="bi bi-person-badge me-2"></i>Сотрудники
+            </NavLink>
+            <NavLink class="nav-link text-white py-2 px-3" href="helpempl">
+                <i class="bi bi-question-circle me-2"></i>Помощь
+            </NavLink>
+        </nav>
+        <div class="logout-section mt-auto p-3">
+            <button class="btn btn-danger w-100" @onclick="LogoutHandler">
+                <i class="bi bi-power me-2"></i>Выйти
+            </button>
+        </div>
     </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="homeempl" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Главная
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="prodempl">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Товары
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="orderempl">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Заказы
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="custempl">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Клиенты
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="emplempl">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Сотрудники
-            </NavLink>
-        </div>
-        <button @onclick="LogoutHandler">Выйти</button>
-    </nav>
 </div>
 
 @code {
@@ -50,3 +43,26 @@
     }
 }
 
+<style>
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .nav-link {
+        transition: background-color 0.3s ease;
+    }
+    .nav-link:hover {
+        background-color: rgba(255,255,255,0.1);
+    }
+    .brand-logo {
+        background-color: rgba(0,0,0,0.2);
+    }
+    .logout-section {
+        margin-top: auto;
+    }
+</style>

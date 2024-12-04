@@ -6,112 +6,112 @@
 @inject IProductRepository ProductRepository
 @inject IMapper Mapper
 
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white shadow-md rounded-lg">
-        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 class="text-2xl font-bold text-gray-800">Product Management</h3>
-            <button @onclick="PrepareNewProduct"
-                    class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
-                Add New Product
+<div class="container">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Товары</h3>
+            <button @onclick="PrepareNewProduct" class="btn btn-success">
+                Добавить новый товар
             </button>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-6 p-6">
-            <!-- Product List -->
-            <div class="bg-white border border-gray-200 rounded-lg">
-                <div class="p-4 border-b">
-                    <input type="text"
-                           @bind="SearchTerm"
-                           @bind:event="oninput"
-                           placeholder="Search products..."
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Product List -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <input type="text"
+                                   @bind="SearchTerm"
+                                   @bind:event="oninput"
+                                   placeholder="Поиск..."
+                                   class="form-control" />
+                        </div>
 
-                @if (isLoading)
-                {
-                    <div class="flex justify-center items-center py-8">
-                        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-blue-500"></div>
-                    </div>
-                }
-                else if (filteredProducts.Any())
-                {
-                    <div class="divide-y divide-gray-200">
-                        @foreach (var product in filteredProducts)
+                        @if (isLoading)
                         {
-                            <div class="p-4 hover:bg-gray-50 flex justify-between items-center">
-                                <div>
-                                    <div class="font-semibold">@product.Name</div>
-                                    <div class="text-sm text-gray-500">
-                                        Price: @product.Price.ToString("C") | Stock: @product.StockQuantity
-                                    </div>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <button @onclick="() => EditProduct(product)"
-                                            class="text-blue-500 hover:text-blue-700">
-                                        Edit
-                                    </button>
-                                    <button @onclick="() => DeleteProduct(product)"
-                                            class="text-red-500 hover:text-red-700">
-                                        Delete
-                                    </button>
+                            <div class="d-flex justify-content-center align-items-center p-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Загрузка...</span>
                                 </div>
                             </div>
                         }
+                        else if (filteredProducts.Any())
+                        {
+                            <ul class="list-group list-group-flush">
+                                @foreach (var product in filteredProducts)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="fw-bold">@product.Name</div>
+                                            <small class="text-muted">
+                                                Цена: @product.Price.ToString("C") | Stock: @product.StockQuantity
+                                            </small>
+                                        </div>
+                                        <div>
+                                            <button @onclick="() => EditProduct(product)" class="btn btn-sm btn-outline-primary me-2">
+                                                Изменить
+                                            </button>
+                                            <button @onclick="() => DeleteProduct(product)" class="btn btn-sm btn-outline-danger">
+                                                Удалить
+                                            </button>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <div class="card-body text-center text-muted">
+                                Товары не найдены.
+                            </div>
+                        }
                     </div>
-                }
-                else
-                {
-                    <div class="text-center py-8 text-gray-500">
-                        No products found.
-                    </div>
-                }
-            </div>
+                </div>
 
-            <!-- Product Form -->
-            <div class="bg-white border border-gray-200 rounded-lg p-6">
-                <h4 class="text-xl font-semibold mb-6">
-                    @(currentProduct.Id == Guid.Empty ? "Add New Product" : "Edit Product")
-                </h4>
-
-                <EditForm Model="@currentProduct" OnValidSubmit="@SaveProduct">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary class="text-red-500 mb-4" />
-
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Product Name</label>
-                            <InputText @bind-Value="currentProduct.Name"
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-                            <ValidationMessage For="@(() => currentProduct.Name)" class="text-red-500 text-sm mt-1" />
+                <!-- Product Form -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="mb-0">
+                                @(currentProduct.Id == Guid.Empty ? "Добавление" : "Изменение")
+                            </h4>
                         </div>
+                        <div class="card-body">
+                            <EditForm Model="@currentProduct" OnValidSubmit="@SaveProduct">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary class="alert alert-danger" />
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Price</label>
-                            <InputNumber @bind-Value="currentProduct.Price"
-                                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-                            <ValidationMessage For="@(() => currentProduct.Price)" class="text-red-500 text-sm mt-1" />
-                        </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Название</label>
+                                    <InputText @bind-Value="currentProduct.Name" class="form-control" />
+                                    <ValidationMessage For="@(() => currentProduct.Name)" class="text-danger small" />
+                                </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Stock Quantity</label>
-                            <InputNumber @bind-Value="currentProduct.StockQuantity"
-                                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-                            <ValidationMessage For="@(() => currentProduct.StockQuantity)" class="text-red-500 text-sm mt-1" />
-                        </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Цена</label>
+                                    <InputNumber @bind-Value="currentProduct.Price" class="form-control" />
+                                    <ValidationMessage For="@(() => currentProduct.Price)" class="text-danger small" />
+                                </div>
 
-                        <div class="flex space-x-4">
-                            <button type="submit"
-                                    class="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
-                                @(currentProduct.Id == Guid.Empty ? "Add Product" : "Update Product")
-                            </button>
-                            <button type="button"
-                                    @onclick="CancelEdit"
-                                    class="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
-                                Cancel
-                            </button>
+                                <div class="mb-3">
+                                    <label class="form-label">Количество</label>
+                                    <InputNumber @bind-Value="currentProduct.StockQuantity" class="form-control" />
+                                    <ValidationMessage For="@(() => currentProduct.StockQuantity)" class="text-danger small" />
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-primary me-md-2">
+                                        @(currentProduct.Id == Guid.Empty ? "Добавить" : "Изменить")
+                                    </button>
+                                    <button type="button" @onclick="CancelEdit" class="btn btn-secondary">
+                                        Отмена
+                                    </button>
+                                </div>
+                            </EditForm>
                         </div>
                     </div>
-                </EditForm>
+                </div>
             </div>
         </div>
     </div>

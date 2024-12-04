@@ -1,17 +1,17 @@
 ﻿namespace MauiApp1.DbApp.Models
 {
-
     public class OrderEntity
     {
-        public static OrderEntity Create(Guid customerId, Guid productId, int quantity)
+        public static OrderEntity Create(Guid customerId, Guid productId, int quantity, decimal productPrice)
         {
             return new OrderEntity
             {
-                Id = customerId,
+                Id = Guid.NewGuid(),
                 OrderDate = DateTime.UtcNow,
                 CustomerId = customerId,
                 ProductId = productId,
-                Quantity = quantity
+                Quantity = quantity,
+                TotalPrice = quantity * productPrice // Рассчитываем общую стоимость при создании
             };
         }
 
@@ -26,7 +26,6 @@
 
         public int Quantity { get; set; } // Количество товара
 
-        public decimal TotalPrice => Quantity * Product.Price; // Общая стоимость заказа
+        public decimal TotalPrice { get; set; } // Общая стоимость заказа, сохраняется в БД
     }
-
 }

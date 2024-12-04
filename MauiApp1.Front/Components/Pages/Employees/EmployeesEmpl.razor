@@ -1,50 +1,71 @@
 ﻿@page "/emplempl"
 @layout EmployeeLayout
-
 @using AutoMapper
 @using MauiApp1.DbApp.Models
 @using MauiApp1.DbApp.Models.Dtos
 @using MauiApp1.Front.Services.Jwt
+
 @inject IUserRepository UserRepository
 @inject IMapper Mapper
 
-<div class="container mt-4">
-    <h2 class="mb-4">Сотрудники</h2>
-
-    @if (isLoading)
-    {
-        <div class="spinner-border" role="status">
-            <span class="sr-only">Загрузка...</span>
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">Сотрудники</h2>
+                    <div class="d-flex align-items-center">
+                        <span class="me-2 text-light">Всего: @employees.Count</span>
+                        <button class="btn btn-sm btn-light" @onclick="LoadEmployees">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @if (isLoading)
+                    {
+                            <div class="d-flex justify-content-center p-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Загрузка...</span>
+                                </div>
+                            </div>
+                    }
+                    else if (employees == null || employees.Count == 0)
+                    {
+                            <div class="alert alert-info m-3 text-center">
+                                Сотрудники не найдены
+                            </div>
+                    }
+                    else
+                    {
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Имя</th>
+                                            <th>Имя пользователя</th>
+                                            
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var employee in employees)
+                                    {
+                                                <tr>
+                                                    <td>@employee.Id</td>
+                                                    <td>@employee.Name</td>
+                                                    <td>@employee.Username</td>
+                                                    
+                                                </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                    }
+                </div>
+            </div>
         </div>
-    }
-    else if (employees == null || employees.Count == 0)
-    {
-        <div class="alert alert-info">
-            No orders found.
-        </div>
-    }
-    else
-    {
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Имя</th>
-                    <th>Имя пользователя</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var employee in employees)
-                {
-                    <tr>
-                        <td>@employee.Id</td>
-                        <td>@employee.Name</td>
-                        <td>@employee.Username</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+    </div>
 </div>
 
 @code {
@@ -53,17 +74,28 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadEmployees();
+    }
+
+    private async Task LoadEmployees()
+    {
         try
         {
+            isLoading = true;
             var empl = await UserRepository.GetAllAsync();
             employees = empl.Where(x => x.Role == "Employee").Select(x => Mapper.Map<UserDto>(x)).ToList();
             isLoading = false;
         }
         catch (Exception ex)
         {
-            // Consider adding error logging or displaying an error message
-            Console.WriteLine($"Error loading orders: {ex.Message}");
+            Console.WriteLine($"Ошибка загрузки сотрудников: {ex.Message}");
             isLoading = false;
         }
+    }
+
+    private void ViewEmployeeDetails(UserDto employee)
+    {
+        // Placeholder for employee details view
+        Console.WriteLine($"Просмотр деталей сотрудника: {employee.Name}");
     }
 }

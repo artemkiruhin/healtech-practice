@@ -7,39 +7,64 @@
 @inject IUserRepository Repository
 @inject IHashService Hasher
 @inject ILoggingService Logger
-
 @inject NavigationManager NavigationManager
-<div class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8">
-        <h3 class="text-center text-2xl font-bold text-gray-800 mb-6">Регистрация</h3>
-        <EditForm Model="@registerModel" OnValidSubmit="HandleLogin" class="space-y-4">
-            <DataAnnotationsValidator />
-            <div class="relative">
 
-                <InputText @bind-Value="registerModel.Name" type="text" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Name" />
-                <ValidationMessage For="@(() => registerModel.Name)" class="text-red-500 text-sm mt-1" />
+<div class="container-fluid vh-100 bg-primary d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <h2 class="card-title text-primary mb-3">Регистрация</h2>
+                    <p class="text-muted">Создайте свой аккаунт</p>
+                </div>
+                <EditForm Model="@registerModel" OnValidSubmit="HandleLogin">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label class="form-label">Имя</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <InputText @bind-Value="registerModel.Name" class="form-control" placeholder="Введите ваше имя" />
+                        </div>
+                        <ValidationMessage For="@(() => registerModel.Name)" class="text-danger small mt-1" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Имя пользователя</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-at"></i></span>
+                            <InputText @bind-Value="registerModel.Username" class="form-control" placeholder="Придумайте логин" />
+                        </div>
+                        <ValidationMessage For="@(() => registerModel.Username)" class="text-danger small mt-1" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Пароль</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <InputText type="password" @bind-Value="registerModel.Password" class="form-control" placeholder="Введите пароль" />
+                        </div>
+                        <ValidationMessage For="@(() => registerModel.Password)" class="text-danger small mt-1" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="registerModel.IsEmployee" class="form-check-input" id="employeeCheck" />
+                        <label class="form-check-label" for="employeeCheck">
+                            Регистрация как сотрудник
+                        </label>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            Зарегистрироваться
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-muted">Уже есть аккаунт? </span>
+                        <a href="/login" class="btn btn-link p-0">Войти</a>
+                    </div>
+                </EditForm>
             </div>
-            <div class="relative">
-
-                <InputText @bind-Value="registerModel.Username" type="text" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Username" />
-                <ValidationMessage For="@(() => registerModel.Username)" class="text-red-500 text-sm mt-1" />
-            </div>
-
-            <div class="relative">
-
-                <InputText @bind-Value="registerModel.Password" type="password" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Пароль" />
-                <ValidationMessage For="@(() => registerModel.Password)" class="text-red-500 text-sm mt-1" />
-            </div>
-            <div class="relative">
-
-                <InputCheckbox @bind-Value="registerModel.IsEmployee" type="password" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Сотрудник" />
-                <ValidationMessage For="@(() => registerModel.IsEmployee)" class="text-red-500 text-sm mt-1" />
-            </div>
-
-            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                Зарегистрироваться
-            </button>
-        </EditForm>
+        </div>
     </div>
 </div>
 
@@ -48,10 +73,10 @@
 
     private class RegisterModel
     {
-        [Required(ErrorMessage = "Name обязателен")]
+        [Required(ErrorMessage = "Имя обязательно")]
         public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Username обязателен")]
+        [Required(ErrorMessage = "Имя пользователя обязательно")]
         public string Username { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Пароль обязателен")]
@@ -67,23 +92,27 @@
 
         if (user != null)
         {
-
+            // TODO: Обработка существующего пользователя
+            return;
         }
-        else
+
+        try
         {
-            if (registerModel.IsEmployee)
-            {
-                await Repository.AddAsync(UserEntity.Create(registerModel.Name, registerModel.Username, Hasher.HashPassword(registerModel.Password), "Employee"));
-                Logger.LogInfo($"Пользователь {registerModel.Username} успешно зарегитрировался как сотрудник");
-                NavigationManager.NavigateTo("login");
-            }
-            else
-            {
-                await Repository.AddAsync(UserEntity.Create(registerModel.Name, registerModel.Username, Hasher.HashPassword(registerModel.Password), "Customer"));
-                Logger.LogInfo($"Пользователь {registerModel.Username} успешно зарегитрировался как клиент");
-                NavigationManager.NavigateTo("login");
-            }
-        }
+            var userRole = registerModel.IsEmployee ? "Employee" : "Customer";
+            await Repository.AddAsync(UserEntity.Create(
+                registerModel.Name,
+                registerModel.Username,
+                Hasher.HashPassword(registerModel.Password),
+                userRole
+            ));
 
+            Logger.LogInfo($"Пользователь {registerModel.Username} успешно зарегистрировался как {userRole.ToLower()}");
+            NavigationManager.NavigateTo("login");
+        }
+        catch (Exception ex)
+        {
+            // TODO: Обработка ошибок регистрации
+            Logger.LogError($"Ошибка регистрации: {ex.Message}");
+        }
     }
 }

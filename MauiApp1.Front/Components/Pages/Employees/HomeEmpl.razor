@@ -1,6 +1,56 @@
 ﻿@page "/homeempl"
 @layout EmployeeLayout
-<h3>HomeEmpl</h3>
-@code {
+@inject NavigationManager NavigationManager
 
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Панель сотрудника</h1>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Товары</h5>
+                    <p class="card-text">Управление товарами</p>
+                    <a @onclick="ToProducts" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Заказы</h5>
+                    <p class="card-text">Все заказы в системе</p>
+                    <a @onclick="ToOrders" class="btn btn-secondary">Перейти</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Клиенты</h5>
+                    <p class="card-text">Список клиентов</p>
+                    <a @onclick="ToCustomers" class="btn btn-info">Перейти</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Сотрудники</h5>
+                    <p class="card-text">Управление персоналом</p>
+                    <a @onclick="ToEmployees" class="btn btn-warning">Перейти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void ToProducts() => NavigationManager.NavigateTo("prodempl");
+    private void ToOrders() => NavigationManager.NavigateTo("orderempl");
+    private void ToCustomers() => NavigationManager.NavigateTo("custempl");
+    private void ToEmployees() => NavigationManager.NavigateTo("emplempl");
 }

@@ -13,7 +13,7 @@ namespace MauiApp1.Front
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new MainPage()) { Title = "MauiApp1.Front" };
+            return new Window(new MainPage()) { Title = "Healtech" };
         }
     }
 }

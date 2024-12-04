@@ -1,6 +1,35 @@
 ﻿@page "/homecust"
 @layout CustomerLayout
-<h3>HomeCust</h3>
-@code {
+@inject NavigationManager NavigationManager
 
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Добро пожаловать</h1>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Товары</h5>
+                    <p class="card-text">Наши товары.</p>
+                    <a @onclick="ToProducts"  class="btn btn-primary">Посмотреть</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Мои заказы</h5>
+                    <p class="card-text">Заказы в нашей системе.</p>
+                    <a @onclick="ToOrders" class="btn btn-secondary">Посмотреть</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private void ToProducts() => NavigationManager.NavigateTo("prodcust");
+    private void ToOrders() => NavigationManager.NavigateTo("ordercust");
 }
